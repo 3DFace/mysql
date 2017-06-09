@@ -1,0 +1,19 @@
+{
+	"name": "dface/mysql",
+	"description": "Mysqli wrapper to query with dface/sql-placeholders",
+	"type": "library",
+	"license": "MIT",
+	"authors": [{
+		"name": "Denis Ponomarev",
+		"email": "ponomarev@gmail.com"
+	}],
+	"require": {
+		"php": ">=7.1",
+		"dface/sql-placeholders": "dev-master"
+	},
+	"autoload": {
+		"psr-0": {
+			"": ["src/", "tests/"]
+		}
+	}
+}
