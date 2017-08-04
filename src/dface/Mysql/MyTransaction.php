@@ -16,14 +16,15 @@ class MyTransaction {
 	}
 
 	/**
+	 * @param array $params
 	 * @return mixed
 	 * @throws \Throwable
 	 */
-	public function run(){
+	public function run(...$params){
 		$this->dbi->begin();
 		try{
 			$fn = $this->callable;
-			$result = $fn();
+			$result = $fn(...$params);
 			$this->dbi->commit();
 			return $result;
 		}catch(\Throwable $e){
@@ -35,16 +36,17 @@ class MyTransaction {
 	/**
 	 * @param int $retry_count
 	 * @param int $retry_delay
+	 * @param array $params
 	 * @return mixed
 	 * @throws \Throwable
 	 */
-	public function runRetry($retry_count = 0, $retry_delay = 0) {
+	public function runRetry($retry_count = 0, $retry_delay = 0, ... $params) {
 		$fn = $this->callable;
 		$result = null;
 		for($i = -1; $i < $retry_count; $i++){
 			$this->dbi->begin();
 			try{
-				$result = $fn();
+				$result = $fn(...$params);
 				$this->dbi->commit();
 				break;
 			}catch(\Throwable $e){
