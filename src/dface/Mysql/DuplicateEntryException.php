@@ -16,11 +16,11 @@ class DuplicateEntryException extends MysqlException {
 		$this->entry = $entry;
 	}
 
-	function getKey() {
+	public function getKey() {
 		return $this->key;
 	}
 
-	function getEntry() {
+	public function getEntry() {
 		return $this->entry;
 	}
 

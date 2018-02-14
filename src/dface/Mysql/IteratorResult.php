@@ -74,7 +74,7 @@ class IteratorResult implements \JsonSerializable, \IteratorAggregate {
 	 */
 	public function asMap(...$key_fields) : array {
 		$result = [];
-		switch(count($key_fields)){
+		switch(\count($key_fields)){
 			case 0:
 				if($cur = $this->iterator->current()){
 					$detected_key = array_keys($cur)[0];

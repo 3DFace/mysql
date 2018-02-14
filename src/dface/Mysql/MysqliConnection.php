@@ -19,7 +19,7 @@ class MysqliConnection {
 	/** @var \mysqli */
 	private $link;
 	/** @var array */
-	private $parsed;
+	private $parsed = [];
 	/** @var \Exception */
 	private $in_transaction;
 
@@ -119,7 +119,7 @@ class MysqliConnection {
 	 */
 	private function parse(string $statement) {
 		if(!isset($this->parsed[$statement])){
-			if(count($this->parsed) > 100){
+			if(\count($this->parsed) > 100){
 				array_shift($this->parsed);
 			}
 			$this->parsed[$statement] = $this->parser->parse($statement);
