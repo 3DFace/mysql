@@ -9,11 +9,17 @@
 	}],
 	"require": {
 		"php": ">=7.1",
-		"dface/sql-placeholders": "dev-master"
+		"dface/sql-placeholders": "dev-master",
+		"ext-mysqli": "*"
 	},
 	"autoload": {
 		"psr-0": {
-			"": ["src/", "tests/"]
+			"dface\\Mysql": ["src/"]
+		}
+	},
+	"autoload-dev": {
+		"psr-0": {
+			"dface\\Mysql": ["tests/"]
 		}
 	}
 }
