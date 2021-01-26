@@ -1,25 +1,32 @@
 {
-	"name": "dface/mysql",
-	"description": "Mysqli wrapper to query with dface/sql-placeholders",
-	"type": "library",
-	"license": "MIT",
-	"authors": [{
-		"name": "Denis Ponomarev",
-		"email": "ponomarev@gmail.com"
-	}],
-	"require": {
-		"php": ">=7.1",
-		"dface/sql-placeholders": "dev-master",
-		"ext-mysqli": "*"
-	},
-	"autoload": {
-		"psr-0": {
-			"dface\\Mysql": ["src/"]
-		}
-	},
-	"autoload-dev": {
-		"psr-0": {
-			"dface\\Mysql": ["tests/"]
-		}
-	}
+  "name": "dface/mysql",
+  "description": "Mysqli wrapper to query with dface/sql-placeholders",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Denis Ponomarev",
+      "email": "ponomarev@gmail.com"
+    }
+  ],
+  "require": {
+    "php": "^7.4",
+    "dface/sql-placeholders": "^2.0",
+    "ext-mysqli": "*",
+    "ext-json": "*"
+  },
+  "autoload": {
+    "psr-0": {
+      "dface\\Mysql": [
+        "src/"
+      ]
+    }
+  },
+  "autoload-dev": {
+    "psr-0": {
+      "dface\\Mysql": [
+        "tests/"
+      ]
+    }
+  }
 }

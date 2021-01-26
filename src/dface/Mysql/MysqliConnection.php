@@ -1,5 +1,4 @@
 <?php
-/* author: Ponomarev Denis <ponomarev@gmail.com> */
 
 namespace dface\Mysql;
 
@@ -10,32 +9,24 @@ use dface\sql\placeholders\Parser;
 use dface\sql\placeholders\ParserException;
 use dface\sql\placeholders\PlainNode;
 
-class MysqliConnection {
+class MysqliConnection
+{
 
-	/** @var Parser */
-	private $parser;
-	/** @var Formatter */
-	private $formatter;
-	/** @var \mysqli */
-	private $link;
-	/** @var array */
-	private $parsed = [];
-	/** @var \Exception */
-	private $in_transaction;
+	private Parser $parser;
+	private Formatter $formatter;
+	private \mysqli $link;
+	private array $parsed = [];
+	private ?\Exception $in_transaction = null;
 
-	/**
-	 * MySqliConnectionAlt constructor.
-	 * @param \mysqli $link
-	 * @param Parser $parser
-	 * @param Formatter $formatter
-	 */
-	public function __construct(\mysqli $link, Parser $parser, Formatter $formatter) {
+	public function __construct(\mysqli $link, Parser $parser, Formatter $formatter)
+	{
 		$this->link = $link;
 		$this->parser = $parser;
 		$this->formatter = $formatter;
 	}
 
-	public function close() : void {
+	public function close() : void
+	{
 		$this->link->close();
 	}
 
@@ -46,7 +37,8 @@ class MysqliConnection {
 	 * @throws FormatterException
 	 * @throws ParserException
 	 */
-	public function setIsolationLevel($isolationLevel) : void {
+	public function setIsolationLevel(string $isolationLevel) : void
+	{
 		$this->query('SET SESSION TRANSACTION ISOLATION LEVEL '.$isolationLevel);
 	}
 
@@ -56,8 +48,9 @@ class MysqliConnection {
 	 * @return self
 	 * @throws MysqlException
 	 */
-	public function begin() : MysqliConnection {
-		if($this->in_transaction !== null){
+	public function begin() : MysqliConnection
+	{
+		if ($this->in_transaction !== null) {
 			throw new MysqlException('Transaction is already started at: '.$this->in_transaction->getTraceAsString());
 		}
 		$this->in_transaction = new \Exception();
@@ -71,8 +64,9 @@ class MysqliConnection {
 	 *
 	 * @throws MysqlException
 	 */
-	public function commit() : MysqliConnection {
-		if($this->in_transaction === null){
+	public function commit() : MysqliConnection
+	{
+		if ($this->in_transaction === null) {
 			throw new MysqlException('No active transaction to commit');
 		}
 		$this->link->commit();
@@ -87,8 +81,9 @@ class MysqliConnection {
 	 *
 	 * @throws MysqlException
 	 */
-	public function rollback() : MysqliConnection {
-		if($this->in_transaction === null){
+	public function rollback() : MysqliConnection
+	{
+		if ($this->in_transaction === null) {
 			throw new MysqlException('No active transaction to rollback');
 		}
 		$this->link->rollback();
@@ -104,8 +99,9 @@ class MysqliConnection {
 	 *
 	 * @throws ParserException
 	 */
-	public function prepare(string $statement) : Node {
-		if(strpos($statement, '{') !== false){
+	public function prepare(string $statement) : Node
+	{
+		if (\strpos($statement, '{') !== false) {
 			return $this->parse($statement);
 		}
 		return new PlainNode(0, $statement);
@@ -117,10 +113,11 @@ class MysqliConnection {
 	 *
 	 * @throws ParserException
 	 */
-	private function parse(string $statement) {
-		if(!isset($this->parsed[$statement])){
-			if(\count($this->parsed) > 100){
-				array_shift($this->parsed);
+	private function parse(string $statement)
+	{
+		if (!isset($this->parsed[$statement])) {
+			if (\count($this->parsed) > 100) {
+				\array_shift($this->parsed);
 			}
 			$this->parsed[$statement] = $this->parser->parse($statement);
 		}
@@ -135,16 +132,16 @@ class MysqliConnection {
 	 *
 	 * @throws ParserException|FormatterException
 	 */
-	public function build($statement, ...$params) : PlainNode {
-		if(!($statement instanceof Node)){
-			if(strpos($statement, '{') !== false){
+	public function build($statement, ...$params) : PlainNode
+	{
+		if (!($statement instanceof Node)) {
+			if (strpos($statement, '{') !== false) {
 				$statement = $this->prepare($statement);
-			}else{
+			} else {
 				$statement = new PlainNode(0, $statement);
 			}
 		}
-		$node = $this->formatter->format($statement, $params, [$this->link, 'real_escape_string']);
-		return $node;
+		return $this->formatter->format($statement, $params, [$this->link, 'real_escape_string']);
 	}
 
 	/**
@@ -154,7 +151,8 @@ class MysqliConnection {
 	 *
 	 * @throws MySqlException|FormatterException|ParserException
 	 */
-	public function query($statement, ...$params) {
+	public function query($statement, ...$params)
+	{
 		return $this->queryOpt($statement, MYSQLI_STORE_RESULT, ... $params);
 	}
 
@@ -166,14 +164,15 @@ class MysqliConnection {
 	 *
 	 * @throws MySqlException|FormatterException|ParserException
 	 */
-	public function queryOpt($statement, int $options, ...$params) {
-		if(!($statement instanceof PlainNode)){
+	public function queryOpt($statement, int $options, ...$params)
+	{
+		if (!($statement instanceof PlainNode)) {
 			$statement = $this->build($statement, ...$params);
 		}
 		$statement = $statement->__toString();
 		$this->preventDdlInTransaction($statement);
 		$res = $this->link->query($statement, $options);
-		if($res === false){
+		if ($res === false) {
 			throw $this->createException($this->link->error, $this->link->errno);
 		}
 		return $res;
@@ -185,20 +184,21 @@ class MysqliConnection {
 	 *
 	 * @throws MySqlException|FormatterException|ParserException
 	 */
-	public function multiUpdate($statement, ...$params) : void {
-		if(!($statement instanceof PlainNode)){
+	public function multiUpdate($statement, ...$params) : void
+	{
+		if (!($statement instanceof PlainNode)) {
 			$statement = $this->build($statement, ...$params);
 		}
 		$statement = $statement->__toString();
 		$this->preventDdlInTransaction($statement);
-		if(!$this->link->multi_query($statement)){
+		if (!$this->link->multi_query($statement)) {
 			throw $this->createException($this->link->error, $this->link->errno);
 		}
-		do{
-			if($res = $this->link->use_result()){
+		do {
+			if ($res = $this->link->use_result()) {
 				$res->free();
 			}
-		}while($this->link->more_results() && $this->link->next_result());
+		} while ($this->link->more_results() && $this->link->next_result());
 	}
 
 	/**
@@ -208,7 +208,8 @@ class MysqliConnection {
 	 *
 	 * @throws MySqlException|FormatterException|ParserException
 	 */
-	public function select($statement, ...$params) : IteratorResult {
+	public function select($statement, ...$params) : IteratorResult
+	{
 		$res = $this->query($statement, ...$params);
 		return new IteratorResult($this->gen($res));
 	}
@@ -221,13 +222,15 @@ class MysqliConnection {
 	 *
 	 * @throws MySqlException|FormatterException|ParserException
 	 */
-	public function selectOpt($statement, $options, ...$params) : IteratorResult {
+	public function selectOpt($statement, int $options, ...$params) : IteratorResult
+	{
 		$res = $this->queryOpt($statement, $options, ...$params);
 		return new IteratorResult($this->gen($res));
 	}
 
-	private function gen(\mysqli_result $res) : \Generator {
-		while($arr = $res->fetch_assoc()){
+	private function gen(\mysqli_result $res) : \Generator
+	{
+		while ($arr = $res->fetch_assoc()) {
 			yield $arr;
 		}
 		$res->close();
@@ -240,7 +243,8 @@ class MysqliConnection {
 	 *
 	 * @throws MySqlException|FormatterException|ParserException
 	 */
-	public function update($statement, ...$params) : int {
+	public function update($statement, ...$params) : int
+	{
 		$this->query($statement, ...$params);
 		return $this->link->affected_rows;
 	}
@@ -252,7 +256,8 @@ class MysqliConnection {
 	 *
 	 * @throws MySqlException|FormatterException|ParserException
 	 */
-	public function insert($statement, ...$params) : int {
+	public function insert($statement, ...$params) : int
+	{
 		$this->query($statement, ...$params);
 		return $this->link->insert_id;
 	}
@@ -263,8 +268,9 @@ class MysqliConnection {
 	 *
 	 * @return MysqlException
 	 */
-	private function createException(string $message, int $code) : MysqlException {
-		if(preg_match("/Duplicate entry '(.+)' for key '(.+)'/", $message, $m)){
+	private function createException(string $message, int $code) : MysqlException
+	{
+		if (\preg_match("/Duplicate entry '(.+)' for key '(.+)'/", $message, $m)) {
 			return new DuplicateEntryException($m[2], $m[1], $message, $code);
 		}
 		return new MysqlException($message, $code);
@@ -275,8 +281,9 @@ class MysqliConnection {
 	 *
 	 * @throws MysqlException
 	 */
-	private function preventDdlInTransaction(string $statement) : void {
-		if($this->in_transaction !== null && preg_match('/^\s*(create|drop|alter)/i', $statement)){
+	private function preventDdlInTransaction(string $statement) : void
+	{
+		if ($this->in_transaction !== null && \preg_match('/^\s*(create|drop|alter)/i', $statement)) {
 			throw new MysqlException('DDL inside transaction');
 		}
 	}

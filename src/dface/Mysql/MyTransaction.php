@@ -1,16 +1,14 @@
 <?php
-/* author: Ponomarev Denis <ponomarev@gmail.com> */
 
 namespace dface\Mysql;
 
 class MyTransaction {
 
-	/** @var MysqliConnection */
-	private $dbi;
+	private  MysqliConnection $dbi;
 	/** @var callable */
 	private $callable;
 
-	public function __construct(MysqliConnection $dbi, $callable) {
+	public function __construct(MysqliConnection $dbi, callable $callable) {
 		$this->dbi = $dbi;
 		$this->callable = $callable;
 	}
@@ -53,7 +51,7 @@ class MyTransaction {
 				$this->dbi->rollback();
 				if($i < $retry_count - 1){
 					if($retry_delay > 0){
-						sleep($retry_delay);
+						\sleep($retry_delay);
 					}
 				}else{
 					throw $e;
