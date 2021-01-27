@@ -104,7 +104,7 @@ class MysqliConnection
 		if (\strpos($statement, '{') !== false) {
 			return $this->parse($statement);
 		}
-		return new PlainNode(0, $statement);
+		return new PlainNode($statement);
 	}
 
 	/**
@@ -138,7 +138,7 @@ class MysqliConnection
 			if (strpos($statement, '{') !== false) {
 				$statement = $this->prepare($statement);
 			} else {
-				$statement = new PlainNode(0, $statement);
+				$statement = new PlainNode($statement);
 			}
 		}
 		return $this->formatter->format($statement, $params, [$this->link, 'real_escape_string']);
